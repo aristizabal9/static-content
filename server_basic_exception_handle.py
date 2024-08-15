@@ -115,7 +115,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
 
                 # Call the getRecommendation API on the RecommendationService
-                response = call_getRecommendation(self.region, 0)
+                response = call_getRecommendation(self.region, str(0))
 
                 # Return a success status code
                 self.send_response(200)
