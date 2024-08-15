@@ -131,6 +131,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_response(503)
             
                 message = "<h1>Service Unavailable</h1>"
+                message += '<br><br><br><h2>Diagnostic Info:</h2>'
+                message += '<br>We are unable to provide personalized recommendations'
+                message += '<br>If this persists, please report the following info to us:'
+                message += str(traceback.format_exception_only(e.__class__, e))
             
             self.send_header('Content-type', 'text/html')
             self.end_headers()
