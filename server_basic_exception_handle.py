@@ -60,21 +60,32 @@ class RequestHandler(BaseHTTPRequestHandler):
             # In the future maybe allow student to supply the user ID as input
             user_id = str(random.randint(1, 4))
 
+            # Error handling:
+            # surround the call to RecommendationService in a try catch
             try:
+
                 # Call the getRecommendation API on the RecommendationService
                 response = call_getRecommendation(self.region, user_id)
+
                 # Parses value of recommendation from DynamoDB JSON return value
                 # {'Item': {
-                #     'ServiceAPI': {'S': 'getRecommendation'}, 
-                #     'UserID': {'N': '1'}, 
+                #     'ServiceAPI': {'S': 'getRecommendation'},
+                #     'UserID': {'N': '1'},
                 #     'Result': {'S': 'M*A*S*H'},  ...
                 tv_show = response['Item']['Result']['S']
                 user_name = response['Item']['UserName']['S']
                 message += recommendation_message (user_name, tv_show, True)
-            except Exception:
-                tv_show = 'Valued Customer'
-                user_name = 'I Love Lucy'
-                message += recommendation_message (user_name, tv_show, True)
+
+            # Error handling:
+            # If the service dependency fails, and we cannot make a personalized recommendation
+            # then give a pre-selected (static) recommendation
+            # and report diagnostic information
+            except Exception as e:
+                message += recommendation_message ('Valued Customer', 'I Love Lucy', False)
+                message += '<br><br><br><h2>Diagnostic Info:</h2>'
+                message += '<br>We are unable to provide personalized recommendations'
+                message += '<br>If this persists, please report the following info to us:'
+                message += str(traceback.format_exception_only(e.__class__, e))
 
 
             # Add metadata - this is useful in the lab to see
