@@ -63,17 +63,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
                 # Call the getRecommendation API on the RecommendationService
                 response = call_getRecommendation(self.region, user_id)
+                # Parses value of recommendation from DynamoDB JSON return value
+                # {'Item': {
+                #     'ServiceAPI': {'S': 'getRecommendation'}, 
+                #     'UserID': {'N': '1'}, 
+                #     'Result': {'S': 'M*A*S*H'},  ...
+                tv_show = response['Item']['Result']['S']
+                user_name = response['Item']['UserName']['S']
+                message += recommendation_message (user_name, tv_show, True)
             except Exception:
-                response = getDefaultRecommendation()
+                tv_show = 'Valued Customer'
+                user_name = 'I Love Lucy'
+                message += recommendation_message (user_name, tv_show, True)
 
-            # Parses value of recommendation from DynamoDB JSON return value
-            # {'Item': {
-            #     'ServiceAPI': {'S': 'getRecommendation'}, 
-            #     'UserID': {'N': '1'}, 
-            #     'Result': {'S': 'M*A*S*H'},  ...
-            tv_show = response['Item']['Result']['S']
-            user_name = response['Item']['UserName']['S']
-            message += recommendation_message (user_name, tv_show, True)
 
             # Add metadata - this is useful in the lab to see
             # info about the EC2 instance and Availability Zone
@@ -146,29 +148,6 @@ def get_metadata():
         metadata += "Running outside AWS"
 
     return metadata
-
-# This method returns the default value when RecommendationService fails.
-def getDefaultRecommendation():
-    return '''
-        {
-            "PutRequest": {
-                "Item": {
-                "Result": {
-                    "S": "I Love Lucy"
-                },
-                "ServiceAPI": {
-                    "S": "getRecommendation"
-                },
-                "UserID": {
-                    "N": "1"
-                },
-                "UserName": {
-                    "S": "Valued Customer"
-                }
-                }
-            }
-        }
-    '''
 
 # This method mocks the call to the RecommendationService.
 # Calls to the getRecommendation API are actually get_item
