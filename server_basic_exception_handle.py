@@ -110,12 +110,31 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Healthcheck request - will be used by the Elastic Load Balancer
         elif self.path == '/healthcheck':
 
-            # Return a success status code
-            self.send_response(200)
+            # Error handling:
+            # surround the call to RecommendationService in a try catch
+            try:
+
+                # Call the getRecommendation API on the RecommendationService
+                response = call_getRecommendation(self.region, 0)
+
+                # Return a success status code
+                self.send_response(200)
+            
+                message = "<h1>Success</h1>"
+
+            # Error handling:
+            # If the service dependency fails, and we cannot make a personalized recommendation
+            # then give a pre-selected (static) recommendation
+            # and report diagnostic information
+            except Exception as e:
+                # Return a success status code
+                self.send_response(503)
+            
+                message = "<h1>Service Unavailable</h1>"
+            
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
-            message = "<h1>Success</h1>"
 
             # Add metadata
             message += get_metadata()
